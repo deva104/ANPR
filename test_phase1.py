@@ -120,6 +120,12 @@ def main():
         detector_fn=detector_fn,
         ocr_fn=ocr_fn,
         detect_every=BENCHMARK_DETECT_EVERY,
+        detect_scale=0.50,
+        ocr_sharpness=120.0,
+        ocr_force_every=20,
+        ocr_min_width=100,
+        ocr_min_height=28,
+        vote_buffer=12,
         max_frames=frame_cap if frame_cap > 0 else None,
         time_breakdown=True,
     )

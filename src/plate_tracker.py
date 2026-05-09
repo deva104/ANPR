@@ -14,7 +14,7 @@ class PlateTracker:
       - Frame counter since last detection association
     """
 
-    def __init__(self, vote_buffer=7, max_unseen_frames=30):
+    def __init__(self, vote_buffer=12, max_unseen_frames=30):
         self.vote_buffer = int(vote_buffer)
         self.max_unseen_frames = int(max_unseen_frames)
         self._next_box_id = 0
@@ -120,9 +120,23 @@ class PlateTracker:
         forced = tr["frames_since_ocr"] >= ocr_force_every
         return bool(quality_ok or forced), bool(forced)
 
+    @staticmethod
+    def _is_plausible_plate_text(text):
+        if text is None or not isinstance(text, str):
+            return False
+        if len(text) < 4 or len(text) > 13:
+            return False
+        if not any(ch.isdigit() for ch in text):
+            return False
+        if not any(ch.isalpha() for ch in text):
+            return False
+        return True
+
     def record_ocr_result(self, box_id, text):
         tr = self._tracks.get(box_id)
         if tr is None:
+            return
+        if not self._is_plausible_plate_text(text):
             return
         tr["ocr_buffer"].append(text)
         tr["frames_since_ocr"] = 0

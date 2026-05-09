@@ -1,6 +1,7 @@
 """Shared helpers for infer_objectdet.py and infer_semanticseg.py video I/O."""
 
 import os
+import csv
 import json
 import time
 from time import perf_counter
@@ -62,9 +63,9 @@ def run_video_phase1(
     detect_scale=0.67,
     ocr_min_width=100,
     ocr_min_height=28,
-    ocr_sharpness=80.0,
-    ocr_force_every=10,
-    vote_buffer=7,
+    ocr_sharpness=120.0,
+    ocr_force_every=20,
+    vote_buffer=12,
     live_preview=False,
     max_frames=None,
     conf_thresh=0.1,
@@ -257,6 +258,39 @@ def run_video_phase1(
     with open(out_json, "w") as f:
         json.dump(json_results, f)
 
+    out_csv = os.path.join(json_dir, f"{stem}.csv")
+    _csv_fields = [
+        "frame",
+        "box_id",
+        "x1",
+        "y1",
+        "x2",
+        "y2",
+        "raw_ocr",
+        "voted_text",
+        "ocr_forced",
+    ]
+    with open(out_csv, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=_csv_fields)
+        w.writeheader()
+        for row in json_results:
+            bx = row.get("box") or [None, None, None, None]
+            if len(bx) < 4:
+                bx = list(bx) + [None] * (4 - len(bx))
+            w.writerow(
+                {
+                    "frame": row.get("frame"),
+                    "box_id": row.get("box_id"),
+                    "x1": bx[0],
+                    "y1": bx[1],
+                    "x2": bx[2],
+                    "y2": bx[3],
+                    "raw_ocr": row.get("raw_ocr") if row.get("raw_ocr") is not None else "",
+                    "voted_text": row.get("voted_text", ""),
+                    "ocr_forced": row.get("ocr_forced", False),
+                }
+            )
+
     total_time = time.time() - t_start
     track_events = len(json_results)
     ocr_skip_rate = 0.0
@@ -317,4 +351,5 @@ def run_video_phase1(
         "peak_fps": peak_fps,
         "output_video": out_video_path,
         "output_json": out_json,
+        "output_csv": out_csv,
     }

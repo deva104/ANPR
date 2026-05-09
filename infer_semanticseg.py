@@ -282,12 +282,12 @@ if __name__ == "__main__":
         help="Output root: plots/, jsons/, videos/ (annotated *_annotated.mp4)",
     )
     parser.add_argument("--detect_every", type=int, default=5)
-    parser.add_argument("--detect_scale", type=float, default=0.67)
+    parser.add_argument("--detect_scale", type=float, default=0.50)
     parser.add_argument("--ocr_min_width", type=int, default=100)
     parser.add_argument("--ocr_min_height", type=int, default=28)
-    parser.add_argument("--ocr_sharpness", type=float, default=80.0)
-    parser.add_argument("--ocr_force_every", type=int, default=10)
-    parser.add_argument("--vote_buffer", type=int, default=7)
+    parser.add_argument("--ocr_sharpness", type=float, default=120.0)
+    parser.add_argument("--ocr_force_every", type=int, default=20)
+    parser.add_argument("--vote_buffer", type=int, default=12)
     parser.add_argument("--live_preview", action="store_true")
 
     args = parser.parse_args()
