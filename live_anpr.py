@@ -16,6 +16,10 @@ from src.object_detection.utils.utils import preprocess_image
 from src.License_Plate_Recognition.model.LPRNet import build_lprnet
 from src.License_Plate_Recognition.test_LPRNet import Greedy_Decode_inference
 from src.plate_tracker import PlateTracker
+from db_manager import PlateDatabase
+
+db_client = PlateDatabase()
+logged_box_ids = set()
 
 STREAM_URL = "http://10.142.150.167:81/stream"
 DETECT_EVERY = 1
@@ -208,6 +212,13 @@ while True:
         voted_text = tracker.get_voted_text(box_id)
         if voted_text and len(voted_text) >= 4:
             print(f"PLATE DETECTED: {voted_text} | frame: {frame_idx}")
+            if box_id not in logged_box_ids:
+                logged_box_ids.add(box_id)
+                # Check authorization on the shared Supabase backend
+                allowed, owner_name = db_client.is_allowed(voted_text)
+                print(f"--> Database Check: Allowed={allowed}, Owner={owner_name}")
+                # Log detection attempt directly to Supabase entry_logs
+                db_client.log_detection(voted_text, allowed, owner_name)
         display_text = voted_text if voted_text else tracker.get_last_text(box_id)
 
         cv2.rectangle(display, (x1, y1), (x2, y2), (0, 255, 0), 2)
