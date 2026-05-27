@@ -133,3 +133,14 @@ dmypy.json
 
 *.mp4
 out_videos/
+
+# ANPR project
+.env
+__pycache__/
+*.pyc
+.venv/
+*.pth
+out_od/
+out_seg/
+out_videos/
+demo_videos/

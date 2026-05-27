@@ -1,14 +1,29 @@
 import cv2
 import time
 
-STREAM_URL = "http://10.142.150.167:81/stream"
+STREAM_URL = "http://10.186.230.167:81/stream"
+
+def stream_candidates(url):
+    base = (url or "").strip()
+    if not base:
+        return []
+    no_slash = base.rstrip("/")
+    return [
+        base,
+        f"{no_slash}/stream",
+        f"{no_slash}:81/stream",
+        f"{no_slash}/video",
+        f"{no_slash}/mjpeg",
+    ]
 
 def open_stream(url):
-    cap = cv2.VideoCapture(url)
-    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-    if cap.isOpened():
-        print(f"Stream connected")
-        return cap
+    for candidate in stream_candidates(url):
+        cap = cv2.VideoCapture(candidate)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        if cap.isOpened():
+            print(f"Stream connected: {candidate}")
+            return cap
+        cap.release()
     print("Failed to connect, retrying...")
     return None
 

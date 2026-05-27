@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANPR Gate — Vehicles</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/vehicles.js" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">🚗 ANPR Gate</div>
+    <div class="nav-links">
+      <a href="/">Dashboard</a>
+      <a href="/vehicles" class="active">Vehicles</a>
+    </div>
+  </nav>
+
+  <main class="page-content">
+    <div class="section">
+      <h2>Add Vehicle</h2>
+      <div class="form-card">
+        <div class="form-group">
+          <label for="plate-input">Plate Number</label>
+          <input type="text" id="plate-input" placeholder="e.g. MH20DV2366" style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label for="name-input">Owner Name</label>
+          <input type="text" id="name-input" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label for="type-select">Vehicle Type</label>
+          <select id="type-select">
+            <option value="owner">Owner</option>
+            <option value="renter">Renter</option>
+            <option value="visitor">Visitor</option>
+            <option value="relative">Relative</option>
+          </select>
+        </div>
+
+        <div class="temporal-fields hidden" id="temporal-fields">
+          <div class="form-group">
+            <label for="valid-from-input">Valid From</label>
+            <input type="date" id="valid-from-input">
+          </div>
+          <div class="form-group">
+            <label for="valid-until-input">Valid Until</label>
+            <input type="date" id="valid-until-input">
+          </div>
+          <div class="form-group">
+            <label for="purpose-input">Purpose of Visit</label>
+            <input type="text" id="purpose-input" placeholder="e.g. House guest, Maintenance work">
+          </div>
+        </div>
+
+        <button type="button" id="add-vehicle-btn">Add Vehicle</button>
+        <div id="form-message"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Registered Vehicles</h2>
+        <input type="text" id="vehicle-search" placeholder="Search plate...">
+      </div>
+      <div class="filter-bar">
+        <button type="button" class="filter-btn active" data-filter="all">All</button>
+        <button type="button" class="filter-btn" data-filter="owner">Owner</button>
+        <button type="button" class="filter-btn" data-filter="renter">Renter</button>
+        <button type="button" class="filter-btn" data-filter="visitor">Visitor</button>
+        <button type="button" class="filter-btn" data-filter="relative">Relative</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="vehicles-table">
+          <thead>
+            <tr>
+              <th>Plate</th>
+              <th>Owner</th>
+              <th>Type</th>
+              <th>Valid Until</th>
+              <th>Purpose</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="vehicles-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <div class="popup-overlay hidden" id="unknown-popup">
+    <div class="popup">
+      <div class="popup-header">❌ Unknown Vehicle Detected</div>
+      <div class="popup-plate" id="popup-plate"></div>
+      <p>This vehicle is not registered in the database.</p>
+      <div class="popup-actions">
+        <button type="button" id="popup-register-btn">Register This Vehicle</button>
+        <button type="button" id="popup-close-btn">Dismiss</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

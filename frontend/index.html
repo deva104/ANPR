@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANPR Gate — Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">🚗 ANPR Gate</div>
+    <div class="nav-links">
+      <a href="/" class="active">Dashboard</a>
+      <a href="/vehicles">Vehicles</a>
+    </div>
+  </nav>
+
+  <main class="page-content">
+    <div class="stats-bar">
+      <div class="stat-card" id="stat-allowed">
+        <span class="stat-icon">✅</span>
+        <span class="stat-number" id="allowed-count">0</span>
+        <span class="stat-label">Allowed Today</span>
+      </div>
+      <div class="stat-card" id="stat-denied">
+        <span class="stat-icon">❌</span>
+        <span class="stat-number" id="denied-count">0</span>
+        <span class="stat-label">Denied Today</span>
+      </div>
+      <div class="stat-card" id="stat-passes">
+        <span class="stat-icon">👤</span>
+        <span class="stat-number" id="passes-count">0</span>
+        <span class="stat-label">Active Passes</span>
+      </div>
+      <div class="stat-card" id="stat-expiring">
+        <span class="stat-icon">⚠️</span>
+        <span class="stat-number" id="expiring-count">0</span>
+        <span class="stat-label">Expiring Soon</span>
+      </div>
+    </div>
+
+    <div class="detection-card" id="detection-card">
+      <div class="detection-status" id="detection-status">Waiting for detection...</div>
+      <div class="detection-plate" id="detection-plate">---</div>
+      <div class="detection-details" id="detection-details"></div>
+      <button class="register-btn hidden" id="register-btn" type="button">Register This Vehicle</button>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Access Logs</h2>
+        <div class="section-actions">
+          <input type="text" id="log-search" placeholder="Search plate...">
+          <button type="button" id="export-btn">Export CSV</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="logs-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Plate</th>
+              <th>Owner</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody id="logs-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <div class="popup-overlay hidden" id="unknown-popup">
+    <div class="popup">
+      <div class="popup-header">❌ Unknown Vehicle Detected</div>
+      <div class="popup-plate" id="popup-plate"></div>
+      <p>This vehicle is not registered in the database.</p>
+      <div class="popup-actions">
+        <button type="button" id="popup-register-btn">Register This Vehicle</button>
+        <button type="button" id="popup-close-btn">Dismiss</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

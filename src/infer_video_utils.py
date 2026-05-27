@@ -70,6 +70,7 @@ def run_video_phase1(
     max_frames=None,
     conf_thresh=0.1,
     time_breakdown=False,
+    cooldown_seconds=5.0,
 ):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -202,27 +203,61 @@ def run_video_phase1(
             voted_text = tracker.get_voted_text(box_id)
             display_text = voted_text if voted_text else tracker.get_last_text(box_id)
 
-            json_results.append(
-                {
-                    "frame": frame_idx,
-                    "box_id": box_id,
-                    "box": [x1, y1, x2, y2],
-                    "raw_ocr": raw_text,
-                    "voted_text": voted_text,
-                    "ocr_forced": is_forced,
-                }
-            )
+            ready = tracker.is_ready_for_verification(box_id)
+
+            if ready:
+                tracker.mark_verified(box_id, cooldown_seconds=cooldown_seconds)
+                verified_plate = voted_text
+                box_color = (0, 255, 0)
+                label = f"VERIFIED: {verified_plate}"
+                json_results.append(
+                    {
+                        "frame": frame_idx,
+                        "box_id": box_id,
+                        "box": [x1, y1, x2, y2],
+                        "raw_ocr": raw_text,
+                        "voted_text": voted_text,
+                        "ocr_forced": is_forced,
+                        "verification_event": True,
+                        "verified_plate": verified_plate,
+                        "verified_at": time.time(),
+                    }
+                )
+                print(
+                    f"[VERIFIED] Frame {frame_idx} | Plate: {verified_plate} | Box ID: {box_id}"
+                )
+            else:
+                cooldown_left = tracker.get_cooldown_remaining(box_id)
+                if cooldown_left > 0:
+                    box_color = (0, 255, 255)
+                    label = f"{display_text} (cooldown {cooldown_left:.1f}s)"
+                else:
+                    box_color = (255, 255, 255)
+                    label = display_text
+                json_results.append(
+                    {
+                        "frame": frame_idx,
+                        "box_id": box_id,
+                        "box": [x1, y1, x2, y2],
+                        "raw_ocr": raw_text,
+                        "voted_text": voted_text,
+                        "ocr_forced": is_forced,
+                        "verification_event": False,
+                        "verified_plate": None,
+                        "verified_at": None,
+                    }
+                )
 
             if time_breakdown:
                 _t0 = perf_counter()
-            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), box_color, 2)
             cv2.putText(
                 annotated_frame,
-                str(display_text),
+                str(label),
                 (x1, max(20, y1 - 8)),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
-                (0, 255, 0),
+                box_color,
                 2,
                 cv2.LINE_AA,
             )
@@ -269,6 +304,9 @@ def run_video_phase1(
         "raw_ocr",
         "voted_text",
         "ocr_forced",
+        "verification_event",
+        "verified_plate",
+        "verified_at",
     ]
     with open(out_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=_csv_fields)
@@ -288,6 +326,9 @@ def run_video_phase1(
                     "raw_ocr": row.get("raw_ocr") if row.get("raw_ocr") is not None else "",
                     "voted_text": row.get("voted_text", ""),
                     "ocr_forced": row.get("ocr_forced", False),
+                    "verification_event": row.get("verification_event", False),
+                    "verified_plate": row.get("verified_plate"),
+                    "verified_at": row.get("verified_at"),
                 }
             )
 

@@ -1,4 +1,5 @@
 from collections import Counter, deque
+import time
 
 
 class PlateTracker:
@@ -48,6 +49,9 @@ class PlateTracker:
             "last_text": "",
             "frames_since_ocr": 0,
             "frames_since_detect_match": 0,
+            "verified": False,
+            "verified_at": 0.0,
+            "cooldown_seconds": 5.0,
         }
 
     def update_on_detect_frame(self, frame, detected_boxes):
@@ -158,6 +162,50 @@ class PlateTracker:
         if tr is None:
             return ""
         return tr.get("last_text", "")
+
+    def is_ready_for_verification(self, box_id):
+        tr = self._tracks.get(box_id)
+        if tr is None:
+            return False
+        voted_text = self.get_voted_text(box_id)
+        if not voted_text:
+            return False
+        if len(voted_text) < 4 or len(voted_text) > 13:
+            return False
+        if not any(ch.isdigit() for ch in voted_text):
+            return False
+        if not any(ch.isalpha() for ch in voted_text):
+            return False
+        buf = list(tr["ocr_buffer"])
+        if len(buf) < 4:
+            return False
+        last_4 = buf[-4:]
+        if last_4.count(voted_text) < 3:
+            return False
+        if tr["verified"] is True:
+            time_since = time.time() - tr["verified_at"]
+            if time_since < tr["cooldown_seconds"]:
+                return False
+            tr["verified"] = False
+        return True
+
+    def mark_verified(self, box_id, cooldown_seconds=5.0):
+        tr = self._tracks.get(box_id)
+        if tr is None:
+            return
+        tr["verified"] = True
+        tr["verified_at"] = time.time()
+        tr["cooldown_seconds"] = cooldown_seconds
+        tr["ocr_buffer"] = deque(maxlen=self.vote_buffer)
+
+    def get_cooldown_remaining(self, box_id):
+        tr = self._tracks.get(box_id)
+        if tr is None:
+            return 0.0
+        if not tr["verified"]:
+            return 0.0
+        remaining = tr["cooldown_seconds"] - (time.time() - tr["verified_at"])
+        return max(0.0, remaining)
 
     def tick(self):
         for tr in self._tracks.values():
