@@ -1,220 +1,361 @@
+# 🚗 ANPR Gate Access Control System
 
-<h1 align="center"> Indian_LPR</h1>
-<h3 align="center">Indian License Plate dataset in wild</h3>
-<p align="center"> http://getplates.ml/ </p>
+<div align="center">
 
-### We can't make dataset public because of legalities involved in making Indian Road data public, feel free to contact if you need any other help in your work. 
-<p align="center">
-    <a href="https://github.com/sanchit2843/Indian_LPR/master">
-    <img src="https://img.shields.io/github/last-commit/sanchit2843/Indian_LPR.svg?style=flat-square&logo=github&logoColor=white"
-         alt="GitHub last commit">
-    <a href="https://github.com/sanchit2843/Indian_LPR/issues">
-    <img src="https://img.shields.io/github/issues-raw/sanchit2843/Indian_LPR.svg?style=flat-square&logo=github&logoColor=white"
-         alt="GitHub issues">
-    <a href="https://github.com/sanchit2843/Indian_LPR/pulls">
-    <img src="https://img.shields.io/github/issues-pr-raw/sanchit2843/Indian_LPR.svg?style=flat-square&logo=github&logoColor=white"
-         alt="GitHub pull requests">
-    
-</p>
- 
-<!-- TABLE OF CONTENTS -->
-<h2 id="table-of-contents">Table of Contents</h2>
+![Python](https://img.shields.io/badge/Python-3.10-blue?style=for-the-badge&logo=python)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.2.1-EE4C2C?style=for-the-badge&logo=pytorch)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.13-5C3EE8?style=for-the-badge&logo=opencv)
 
-<details open="open">
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about-the-project"> ➤ About The Project</a></li>
-    <li><a href="#dataset"> ➤ Dataset</a></li>
-    <li><a href="#folder-structure"> ➤ Folder Structure</a></li>
-    <li><a href="#metrics"> ➤ Metrics</a></li>
-    <li><a href="#training-instructions"> ➤ Training Instructions</a></li>
-    <li><a href="#demo"> ➤ Demo</a></li>
-    <li><a href="#acknowledgement"> ➤ Acknowledgement</a></li>
-  </ol>
-</details>
+**Real-time Automatic Number Plate Recognition for intelligent gate access control**
 
+[Features](#-features) • [Demo](#-demo) • [Architecture](#-architecture) • [Performance](#-performance) • [Setup](#-setup) • [Usage](#-usage)
 
-  
-<!-- ABOUT THE PROJECT -->
-<h2 id="about-the-project">  About The Project</h2>
+</div>
 
-<p align="justify"> 
+---
 
-<hr />
-Indian Number (Licence) Plate Detection is a problem which hasn’t been explored much at an open source level. Most of the big datasets available are for countries like China , Brazil ,but the model trained on these don’t perform well on Indian plates because the font styles and plate designs being used in these countries are different. 
-<hr />
+## 📌 Overview
 
-</p>
+A complete end-to-end ANPR system that detects Indian vehicle licence plates from an **ESP32-CAM live stream**, verifies them against a **cloud database**, and controls gate access — all with a **real-time web dashboard** accessible from any device.
 
+Built specifically for Indian licence plate formats using a two-stage deep learning pipeline:
+- **Stage 1** — FCOS + HRNet backbone for plate localization
+- **Stage 2** — LPRNet with CTC loss for text recognition
 
-<!-- DATASET -->
-<h2 id="dataset"> Dataset</h2>
-<p> 
-<hr />
+Achieved **35 FPS on CPU** (10.4× speedup over baseline) through Phase 1 pipeline optimizations — no GPU required.
 
-In this paper we introduce an Indian Number (licence) plate dataset with 16,192 images and 21683 number plates, along with that we introduce a benchmark model. We have annotated the plates using a 4 point box which helped us in using semantic segmentation for the detection step instead of object detection which is used in most plate detection models and then the characters are also labelled to train our lprnet based OCR for the recognition step
+---
 
-- e are currently understanding the legalities behind making Indian Road data public and cannot give an estimated date to make the data public. Sorry for the hassle, apart from the public datasets mentioned in paper, you can use these datasets for license plate recognition.
-1. https://www.kaggle.com/datasets/kedarsai/indian-license-plates-with-labels
-2. https://idd.insaan.iiit.ac.in/ (Will require annotation for number plates), this is just a Indian driving scene dataset. 
-<hr />
-</p>
+## ✨ Features
 
-<!-- FOLDER STRUCTURE -->
-<h2 id="folder-structure"> Folder Structure</h2>
+- 🎯 **Real-time plate detection** at 35 FPS on CPU hardware
+- 📷 **ESP32-CAM integration** — low-cost wireless camera streaming over WiFi
+- 🔐 **Verify-once mechanism** — 5-second cooldown prevents repeated database writes
+- 🗳️ **Temporal voting** — filters OCR misreads using rolling buffer consensus
+- 👥 **4 vehicle categories** — Owner, Renter, Visitor, Relative
+- ⏰ **Automatic pass expiry** — Visitor/Relative passes auto-denied after valid date
+- 🌐 **Real-time web dashboard** — live WebSocket updates to any device on network
+- 📊 **Access logs** — every detection event logged to Supabase with export to CSV
+- 🚨 **Unknown vehicle popup** — instant register prompt for unrecognized plates
+- 📱 **Mobile responsive** — dashboard works on phone browser
 
-    code
-    
-    │
-    ├── demo_images
-    |
-    ├── src
-    │   ├── License_Plate_Recognition
-    │   │
-    │   ├── object_detection
-    │   │
-    │   ├── semantic_segmentation
-    |
-    ├── weights
-    │   ├── best_lprnet.pth
-    │   │
-    │   ├── best_od.pth
-    │   │
-    │   ├── best_semantic.pth
-    |
-    ├── infer_objectdet.py
-    ├── infer_semanticseg.py
-    ├── README.md
-    
+---
 
+## 🎬 Demo
 
-<!-- Metrics -->
-<h2 id="metrics">Metrics</h2>
-<p align="justify"> 
+> Dashboard screenshot — add your screenshot here
 
-<h3>Detection</h3>
+| Detection | Dashboard | Vehicle Management |
+|-----------|-----------|-------------------|
+| ![Detection](assets/detection.png) | ![Dashboard](assets/dashboard.png) | ![Vehicles](assets/vehicles.png) |
 
-- AP with IOU Threshold t=0.5
-  
-<hr />
-  This AP metric is widely used to evaluate detections in the PASCAL VOC dataset. It measures the AP of each class individually by computing the area under the precision x recall curve interpolating all points. In order to classify detections as TP or FP the IOU threshold is set to t=0.5.
-<hr />
+---
 
-<h3>Recognition</h3>
-
-- Character level accuracy
-
-<hr />
-  Character accuracy is defined by the number of actual characters with their places divided by the total of actual characters i.e. how many characters are rightly detected.
-<hr />
-
-</p>
-
-
-<!-- Benchmark -->
-<h2 id="benchmark">Benchmark</h2>
-
-<p align="justify"> 
-
-In the tables below we present the result of model developed on the test split, the fps was evaluated on 2070 super gpu at a image resolution of 1920*1080.
-
-|                       |    FPS  |    AP       |   
-|-----------------------|---------|-------------|
-|     FCOS(od)          |    12   |    0.8310   |
-|    HRNet(semantic)    |    14   |    0.8313   | 
-
-
-|  Cropping Method      |    Character Accuracy |
-|-----------------------|-----------------------|
-|    4 point            |          75.6         |
-|    2 point            |          66.3         |
-
-</p>
-
-<!-- Training Instructions -->
-<h2 id="training-instructions">Training Instructions</h2>
-
-<hr />
-We have created a baseline model with 2 stage approach, the first stage being the detection of number plates in an image, followed by a second stage to recognize the text in a cropped image of the plate. For the detection stage, we tested two separate models, one using object detection which has been well explored for the task of number plate detection in the past, the second using a semantic segmentation based model for number plate detection.
-<hr />
-
-<h3>Object Detection</h3>
-
-<hr />
-We used a FCOS with Hrnet based backbone. FCOS is a single stage object detection approach and thus works well in real time application such as ours. We used FCOS as the baseline model because FCOS is an anchor free approach and requires minimal hyper parameter tuning. The model was trained for 50 epochs with a batch size of 8 using ranger\cite{Ranger} optimizer. We used pixel level augmentation techniques with random change in brightness and contrast of image. No spatial data augmentation was used in the baseline experimentation. The model was trained with a fixed resolution of 1920*1080 as down sampling the image can make the number plates unreadable, random cropping was not used as well for the sake of simplicity.
-<hr />
+## 🏗️ Architecture
 
 ```
-
-python src/object_detection/train.py --train_txt --batch_size --epochs
-
+ESP32-CAM ──WiFi (MJPEG)──► live_anpr.py
+                              │
+                     FCOS + HRNet Detector
+                     LPRNet OCR
+                     PlateTracker (voting)
+                              │
+                    HTTP POST /api/verify
+                              │
+                         backend.py (FastAPI)
+                         │              │
+                    Supabase        WebSocket
+                  PostgreSQL     ──────────────►  Browser Dashboard
+                  (cloud DB)                      any device on WiFi
 ```
 
-<h3>Semantic Segmentation</h3>
+### Key Components
 
-<hr />
-We used similar Hrnet backbone for semantic segmentation model. This backbone is followed by a convolution layer with output channels equal to the number of classes i.e 2 (the background and number plate). We used cross entropy loss for training, with class weightage for background equal 0.05 and 0.95 for number plate class. We used Ranger optimizer with 0.01 as initial learning rate, and learning rate was decayed using polynomial learning rate decay with power 0.9. We trained the model for 50 epochs with a batch size of 8. Similar to object detection, only pixel level augmentation techniques were applied, which randomly changed the brightness and the contrast of the image. Image resolution for semantic segmentation was fixed at 1920*1080 and no cropping or downsampling was performed.
-<hr />
+| File | Purpose |
+|------|---------|
+| `live_anpr.py` | Main detection loop — reads ESP32 stream, runs ANPR, sends to backend |
+| `src/plate_tracker.py` | PlateTracker — IoU matching, temporal voting, cooldown logic |
+| `src/infer_video_utils.py` | Phase 1 optimized video pipeline |
+| `backend.py` | FastAPI server — REST API + WebSocket |
+| `database.py` | Supabase client — all DB functions including verify_plate() |
+| `frontend/index.html` | Dashboard — live detections, access logs, stats |
+| `frontend/vehicles.html` | Vehicle management — add/edit/delete, filter by type |
 
-```
+---
 
-python src/semantic_segmentation/training.py --csvpath --output_dir --n_classes --n_epoch --batch_size
+## ⚡ Performance
 
-```
+Phase 1 optimizations achieved **10.4× speedup** on CPU without any GPU or model changes:
 
+| Configuration | FPS | Detector % | Notes |
+|--------------|-----|-----------|-------|
+| Baseline (no optimization) | 3.4 | ~90% | Every frame, full resolution |
+| + MIL Tracker | 16.3 | 42.4% | Frame skip helped, tracker killed gain |
+| + Remove MIL Tracker | 20.7 | 67.3% | Velocity extrapolation instead |
+| **Run A — Final** | **35.4** | **61.5%** | detect_every=5, detect_scale=0.50 |
+| Run B (aggressive) | 45.7 | 53.6% | detect_every=8, quality tradeoff |
 
-<h3>License Plate Recognition</h3>
-
-<hr />
-We used LPRNet for character recognition because it is a lightweight Convolutional Neural Network with high accuracy. For our purpose we used LPRNet basic which is based on Inception blocks followed by spatial convolutions and trained with CTC loss. The model was trained for x epochs with ’Adam’ optimizer using batch size of 32 with initial learning rate of 0.001 and gradient noise scale of 0.001. Data augmentation used were random affine transformations,e.g. rotation, scaling and shift.
-<hr />
-
-```
-
-python src/License_Plate_Recognition/train_LPRNet.py --train_img_dirs --test_img_dirs
-
-```
-
-<!-- Demo -->
-<h2 id="demo">Demo</h2>
-
-<h3>original image</h3>
-
-<img src="demo_images/20201031_133155_3220.jpg" alt="original image" width="70%" height="70%">
-
-
-<h3>object detection</h3>
-
+### Time Breakdown (Run A, 900 frames)
 
 ```
-python infer_objectdet.py --source demo_images/20201031_133155_3220.jpg
-
+FCOS Detector:    15.64s  (61.5%)  ← 180 runs only (every 5th frame)
+VideoWriter:       4.03s  (15.9%)
+LPRNet OCR:        3.41s  (13.4%)  ← 292 runs (67% skipped by gating)
+cap.read():        1.55s  ( 6.1%)
+Other:             0.71s  ( 2.8%)
+Tracker update:    0.01s  ( 0.0%)  ← velocity extrapolation, near zero
 ```
 
-<img src="demo_images/20201031_133155_3220_od.jpg" alt="original image" width="70%" height="70%">
+### Pipeline Optimizations Applied
 
-<h3>semantic segmentation</h3>
+- **Frame skipping** — FCOS runs every 5th frame only (80% reduction in detection calls)
+- **Detect scale 0.50** — detector input at 50% resolution (75% fewer pixels)
+- **Velocity extrapolation** — boxes advance between detections using estimated velocity
+- **OCR gating** — size + sharpness checks before running LPRNet
+- **Temporal voting** — 12-frame buffer, majority vote, sanity filter (4-13 chars)
+- **Verify-once cooldown** — 5-second real-time cooldown prevents re-verification
+
+---
+
+## 🔧 Setup
+
+### Prerequisites
+
+- Python 3.10
+- ESP32-CAM (AI-Thinker) with MB programmer board
+- Arduino IDE 2.x (for ESP32 firmware)
+- Supabase account (free tier)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/deva104/ANPR.git
+cd ANPR
+```
+
+### 2. Create virtual environment
+
+```bash
+python -m venv .venv
+
+# Windows
+.\.venv\Scripts\activate
+
+# Linux/Mac
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
+pip install -r requirements_backend.txt
+```
+
+### 4. Download pretrained weights
+
+Place these files in the `weights/` folder:
+```
+weights/
+├── best_od.pth        # FCOS object detector
+├── best_lprnet.pth    # LPRNet OCR
+└── best_semantic.pth  # Semantic segmentation (alternative)
+```
+
+> Weights are available from the [Indian_LPR](https://github.com/xuebinqin/Indian_LPR) upstream repository.
+
+### 5. Configure Supabase
+
+Create a free project at [supabase.com](https://supabase.com) and run these SQL queries:
+
+```sql
+CREATE TABLE vehicles (
+    id BIGSERIAL PRIMARY KEY,
+    plate_number TEXT UNIQUE NOT NULL,
+    owner_name TEXT NOT NULL,
+    vehicle_type TEXT NOT NULL
+        CHECK (vehicle_type IN ('owner', 'renter', 'visitor', 'relative')),
+    valid_from TIMESTAMPTZ NULL,
+    valid_until TIMESTAMPTZ NULL,
+    purpose TEXT NULL,
+    added_on TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE access_logs (
+    id BIGSERIAL PRIMARY KEY,
+    plate_number TEXT NOT NULL,
+    owner_name TEXT DEFAULT 'Unknown',
+    vehicle_type TEXT NULL,
+    detected_on TIMESTAMPTZ DEFAULT NOW(),
+    access_granted BOOLEAN NOT NULL,
+    denial_reason TEXT NULL
+);
+
+-- Allow anon access
+CREATE POLICY "allow_all_vehicles" ON vehicles FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_logs" ON access_logs FOR ALL TO anon USING (true) WITH CHECK (true);
+```
+
+### 6. Configure environment
+
+Create `.env` file in project root:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+LAPTOP_IP=localhost
+BACKEND_PORT=8000
+ESP32_STREAM_URL=http://YOUR_ESP32_IP:81/stream
+```
+
+### 7. Flash ESP32-CAM
+
+1. Open Arduino IDE → File → Examples → ESP32 → Camera → CameraWebServer
+2. Set your WiFi credentials and uncomment `#define CAMERA_MODEL_AI_THINKER`
+3. Hold IO0 button + press RST → Upload
+4. After upload: remove IO0 wire → press RST → note IP from Serial Monitor
+
+---
+
+## 🚀 Usage
+
+### Start the backend
+
+```bash
+python backend.py
+```
+
+Backend runs at `http://localhost:8000`
+
+### Start live ANPR detection
+
+```bash
+python live_anpr.py --source "http://YOUR_ESP32_IP:81/stream"
+```
+
+### Open dashboard
 
 ```
-python infer_semanticseg.py --source demo_images/20201031_133155_3220.jpg
+http://localhost:8000              # same machine
+http://YOUR_LAPTOP_IP:8000         # any device on same WiFi
+```
+
+### Optional flags
+
+```bash
+python live_anpr.py \
+  --source "http://ESP32_IP:81/stream" \
+  --backend "http://localhost:8000" \
+  --mjpeg              # use FFMPEG backend for stream
+```
+
+### Process video files
+
+```bash
+python infer_objectdet.py \
+  --source "demo_videos/test.mp4" \
+  --output_path "out_videos/objectdet" \
+  --detect_every 5 \
+  --detect_scale 0.50 \
+  --live_preview
+```
+
+---
+
+## 📁 Project Structure
 
 ```
-<img src="demo_images/20201031_133155_3220_semantic.jpg" alt="original image" width="70%" height="70%">
+ANPR/
+├── live_anpr.py                    # Live ESP32 stream detection
+├── backend.py                      # FastAPI REST + WebSocket server
+├── database.py                     # Supabase database functions
+├── infer_objectdet.py              # Video/image inference (object detection)
+├── infer_semanticseg.py            # Video/image inference (segmentation)
+├── test_phase1.py                  # Phase 1 benchmark script
+├── requirements.txt                # ANPR dependencies
+├── requirements_backend.txt        # Backend dependencies
+├── .env                            # Credentials (not committed)
+├── frontend/
+│   ├── index.html                  # Dashboard
+│   ├── vehicles.html               # Vehicle management
+│   ├── style.css                   # Dark theme CSS
+│   ├── app.js                      # Dashboard JS
+│   └── vehicles.js                 # Vehicles page JS
+├── src/
+│   ├── plate_tracker.py            # PlateTracker class
+│   ├── infer_video_utils.py        # Phase 1 video pipeline
+│   ├── object_detection/           # FCOS + HRNet model
+│   ├── semantic_segmentation/      # HRNet segmentation model
+│   └── License_Plate_Recognition/  # LPRNet model
+├── weights/                        # Pretrained model weights
+├── demo_videos/                    # Test videos (not committed)
+└── out_videos/                     # Output results (not committed)
+```
 
+---
 
-<!-- Acknowledgement -->
-<h2 id="acknowledgement">Acknowledgement</h2>
+## 🛠️ Tech Stack
 
-<hr />
-If you have any problems about <paper name>, please contact <sanchittanwar75@gmail.com>.
+| Layer | Technology |
+|-------|-----------|
+| Camera | ESP32-CAM AI-Thinker (OV2640) |
+| Detection | FCOS + HRNet backbone (PyTorch) |
+| OCR | LPRNet with CTC loss (PyTorch) |
+| Tracking | Custom PlateTracker (IoU + velocity) |
+| Backend | FastAPI + Uvicorn |
+| Database | Supabase (PostgreSQL) |
+| Realtime | WebSocket |
+| Frontend | Plain HTML + CSS + JS |
+| Hardware | ASUS S14 (Ryzen AI 9 HX 370) |
 
-Please cite the paper @misc{tanwar2021indian,
-      title={Indian Licence Plate Dataset in the wild}, 
-      author={Sanchit Tanwar and Ayush Tiwari and Ritesh Chowdhry},
-      year={2021},
-      eprint={2111.06054},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
-}
-, if you benefit from this dataset.
-<hr />
+---
+
+## 📋 API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/vehicles` | List all registered vehicles |
+| POST | `/api/vehicles` | Add new vehicle |
+| PUT | `/api/vehicles/{plate}` | Update vehicle |
+| DELETE | `/api/vehicles/{plate}` | Remove vehicle |
+| GET | `/api/logs` | Get access logs (last 50) |
+| GET | `/api/logs/search/{plate}` | Search logs by plate |
+| GET | `/api/stats` | Today's stats |
+| POST | `/api/verify` | Verify plate + log + WebSocket push |
+| WS | `/ws` | WebSocket for live updates |
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] ONNX export + DirectML for AMD GPU acceleration
+- [ ] Servo motor integration for physical barrier control
+- [ ] Night vision with IR illumination support
+- [ ] Multi-camera support
+- [ ] Mobile push notifications for unknown vehicles
+- [ ] Cloud deployment (Railway/Fly.io)
+- [ ] LPRNet fine-tuning on larger Indian plate dataset
+
+---
+
+## 🙏 Acknowledgements
+
+- [Indian_LPR](https://github.com/xuebinqin/Indian_LPR) — upstream FCOS + LPRNet implementation for Indian plates
+- [LPRNet Paper](https://arxiv.org/abs/1806.10447) — Zherzdev et al., 2018
+- [FCOS Paper](https://arxiv.org/abs/1904.01355) — Tian et al., 2019
+- [HRNet](https://arxiv.org/abs/1908.07919) — Sun et al., 2019
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+Built by <a href="https://github.com/deva104">Devendra Harale</a> • MIT AOE, Alandi • 2025-26
+</div>
